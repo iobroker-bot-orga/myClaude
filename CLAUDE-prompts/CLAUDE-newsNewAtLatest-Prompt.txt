@@ -1,4 +1,6 @@
-Create a new PR to add an update to history.md like described at C:\GitHub\CLAUDE-instructions\CLAUDE-newsNewAtLatest.md
+Create a new PR to add an update to history.md like described at 
+https://github.com/iobroker-bot-orga/myClaude/blob/main/CLAUDE-instructions/CLAUDE-newsNewAtLatest.md
+
 Adapter:
 
 
