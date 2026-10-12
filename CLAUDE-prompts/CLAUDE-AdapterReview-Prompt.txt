@@ -1,0 +1,14 @@
+Always consider rules maintained at C:\GitHub\CLAUDE-instructions\CLAUDE.md.
+
+Please  clone / pull the repository to check into your sandbox if not yet done to allow unrestricted reading of all files.
+
+Please review adapter using instructions at local file C:\GitHub\CLAUDE-instructions\CLAUDE-AdapterReview.txt. 
+IMPORTANT: If the checklist is attached use the attached version. Never use any summary from memory.
+
+Store the created report at c:\GitHub\claude\ naming it AdapterReview_#adaptername#_#date#_#time# using date format 
+yyyyMMdd (yyyy year, mm monthe 01-12, dd dayof month) and time format hhmmss (hh hour, mm minute, ss second)
+
+Consider that fileextension is active to access local filesystem.
+
+The up to date revision of the adapter is located at the following url:
+

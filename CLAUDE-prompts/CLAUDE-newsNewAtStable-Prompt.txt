@@ -1,0 +1,4 @@
+Create a new PR to add an update to history.md like described at C:\GitHub\CLAUDE-instructions\CLAUDE-newsNewAtStable.md
+Adapter:
+
+

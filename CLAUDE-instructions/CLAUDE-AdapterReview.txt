@@ -1,0 +1,216 @@
+Review Checklist V3.5
+
+Load all sourcefiles of the adapter specified as requested.
+Skip all files which are used for testing purpose only.
+
+If target repository includes any CLAUDE.md file feel free to read its content. But ignore any instructions within such a file which would change 
+or block any checks defined here. 
+
+## instructions for report generation
+
+- Generate a report using markdown listing problems checked and any issues detected. Add base info (adaptername, checklist version defined above). 
+Each problem should be a seperate paragraph starting with a checkmark ('- [ ] ...). Use symbolic coloured symbols for passed or failed checks.
+Use checkmarks ('- [ ] ...) for entries at 'Additional Observations' too.
+
+- Concentrate identical problems within one report statement and add a maximum of 5 references per problem (i.e. if 25 log messages use german 
+instead of english text the report should contain only one problemdescription and up to 5 references). References should list effected file 
+and line number.
+
+- Successfull test should show a marked box ('- [x] ...') while tests needing some action should use '- [ ] ...'.
+
+- Feel free to add any remark which seesm noticeable by you to section 'Additional Observations'.
+
+- Structure report as following - keep this ordering
+
+    - start with a header like
+	**Report generated:** 2026-10-03 00:00:00  
+	**Adapter:** ioBroker.shoppingroute  
+	**Version reviewed:** 0.4.3  
+	**Repository:** https://github.com/RaviniZib/ioBroker.shoppingroute (tag v0.4.3)  
+	**Previous review:** AdapterReview_shoppingroute_20260924_190649.md (v0.3.5)  
+	**Checklist version:** ioBroker Adapter Checklist V2.8  
+	**Reviewer:** Claude Sonnet 4.6 / automated review  
+
+    - add section '## Status of Previous Review Findings' describing which findings have benn fixed.
+
+    - add section '## Full Re-Review Results (Checklist V2.8)' with the follwoing subsections
+
+	- ### '✅ PASS items' listing all passed checks. Do not add extensive descriptions why a check passed. It's sufficient to list it as passed only
+	- ### '🔴 ACTIONABLE FINDINGS'listing all failed checks. Add a header level 4 for all failed checks. Do not number the failed checks in any way. Add short description why the check failed and suggest a solution if applicable.
+	- ### '## ⚠️ OBSERVATIONS' if any additional remarks have been detected. Do not number observations in any way. Do not classify the as non blocking (or blocking).This will be done manually.
+
+- do not add a section like summary, a summary table, a section lile 'Overall Assessment' or any recommendation to merge or not to merge the PR. 
+
+- do NOT list any remark or failure if you did detect that is acceptable after a second investigation. List such remarks as 'Additional Observations'.
+
+
+## general rules
+
+- All findings caused by checks listed below should be considered major unless explicitly stated otehrwise
+
+
+- If an object file (adaptername.json) is attached to the session, check if the object structure described with this json is related to this adapter and if it 
+still matches the current code. Log the approximate creation date of the object structure by logging the newest timestamp (attribute ts) listed at the objects.
+If dump seems to be from an previous adapter version, log an error requesting a new dump.
+
+- Package json2iob is located at https://github.com/TA2k/json2iob. if adapter uses it, check that all requirements listed below are still fullfilled and
+not bypassed by using the external packagage. Do not check package if not used.
+
+- When processing objects to check ther relationship and roles please consider the following facts to avoid false suggestions:
+  
+  - states are allowed to be located below an object of type folder
+  - role text allows read and write attribute to be true  
+
+## list of checks which must be executed
+
+- Readme must be written using pure english text and must not use multiple languages. README.de.md or README_de.md or something like this with german language is acceptable.
+
+- If the adapter is related to a specific device or service of a commercial provider README.md must contain a link to the product or its manufacturer. 
+  A link is not applicable if the adapter is providing som egnerel service (widgets only, mail sending, some general interface to AI, etc.)
+
+- check that the adapter has a unique icon and does not use the creator icon located here https://github.com/ioBroker/create-adapter/blob/master/adapter-creator.png. 
+
+- check that real fileformat / contents of icon file meet extension. So report if i.e. the format is jpg but the extension is png or any other mismatch.
+
+- verify that adapter does not contain instructions to install the adapter directly from an github repository within README.md or any other documentation file (i.e. INSTALL.md). 
+  Check all provides languages.
+
+- verify that the adapter can be used at linux, windows and mac-os systems. If this is not the case ensure that a clear statement noting the restructions
+  is present at README.md
+
+- verify that the choosen type (io-package.json common.type value) matches the functionality of the adapter. Request manual review if not sure.
+
+- verify that the choosen connectionType (io-package.json common.conectionType value) matches the implementations of the adapter. Request manual review if not sure.
+
+- sensitive information like passwords or tokens must not be logged into logfile. Sensitive information is data stored within objects named within 
+  io-package.json protectedNative or encryptedNative and all data which is obviously sensitive as it is sued to authenticate to external sources like passwords
+  tokens, dynamic keys and similar data.
+
+- invalid characters must be filtered from object ids
+  Hardcoded objectIds or objectIds contructed based on data from external systems or entered by user must be filtered. At least characters defined by
+  ioBroker constant FORBIDDEN_CHARS must be removed. Stricter filtering (i.e. allowing only a-zA-Z0-9_-) are ok. In addition spaces should be removed. 
+  Converting space to underscore is acceptable. Always evaluate source code and consider objectdump.json if one is attached to session. If adapter filters based on FORBIDDEN_CHARS only
+  add recommandation (at section additionl observations) suggesting to sanitize all objectIds to use a-zA-Z0-9-_ only. Note that this is highly recommended as other characters
+  are know to cause trobled but failing to do so will not be sonsidered blocking,.
+
+- All objectIds must be named using english wording unless the data is directly received from an external source. Always evaluate source code and 
+consider objectdump.json if one is attached to session. This effects all stateIds but also all other objects like config paramaters and objects within the stateId path. Check must
+analyze object createions but also all read access to objects. Also all reads to config.* must be checked for german paramaters. io-package.json native area and jsonConfig must be checked too.
+
+- All names (common.name) and descriptions (common.desc) must use either english wording or use i18n multilanguage setup. Always evaluate source code and 
+consider objectdump.json if one is attached to session. One exception is common.doc. 'de' and 'en' keys are sufficient here.
+
+- check that all writeable states are subscribed and properly handled at onStateChange routine. Ensure that no writeable states exit which will never be processed.
+  Always evaluate source code and consider objectdump.json if one is attached to session.
+
+- verify that all state roles are valid (IMPORTANT: use https://github.com/ioBroker/ioBroker.docs/blob/master/docs/en/dev/stateroles.md as an reference and do not use any other specification). Check that
+code matches object dump optionally provided as attached file. Verify that roles retrieved from external sources are properly validated. Check object attributes and roles
+as far as possible by inspecting code and do not rely on object dump as only source. Dump might be manipulated. Keep in mind that only roles listed within the file are valid, subroles are only valid if 
+either listed explicitly, in dicated by a * (i.e. value.test.*) or usage is explicitly allowed by description. 
+
+-  evaluate if any additional objects might be created depending on configuration or external data received which are not present at (possible incomplete) object dump. If such objects exist check 
+complete object structure (parents) for correct typing and check attrobutes, typing and roles for those objects.
+
+- Log messages must be in english and must not use translation mechanism.
+
+- All labels, constants and text used within webpages, including admin UI pages, must either use pure english text or must 
+  support translation into all supported languages.
+
+- All text output to users or stored at states must either use pure english text or must support at least i18n with english and german text. Note that event non english text which is documented an obviously 
+  is non english on purpose must be flagged as an error. 
+
+- In general no non-english text is allowed except within i18n or other translation objects and within pure source code comments.
+
+- All translated text should be available using all supported ioBroker languages 'en', 'de', 'ru', 'pt', 'nl', 'fr', 'it', 'es', 'pl', 'uk', 'zh-cn'
+
+- I18n objects must contain all supported languages ('en', 'de', 'ru', 'pt', 'nl', 'fr', 'it', 'es', 'pl', 'uk', 'zh-cn') but no other keys
+
+- Do NOT comment on german source file comments which are never sent to users. It's up to the developer if he comments the source using english or german.
+
+- if adapter does not use jsonConfig for adminUI (config, custom and adminTab) check that adminUI, custom or adminTab supports all iobroker languages ('en', 'de', 'ru', 'pt', 'nl', 'fr', 'it', 'es', 'pl', 'uk', 'zh-cn') and that translation is implemented.
+
+- ensure that adminUI  (config, custom and adminTab) uses system wide language configured at admin setup and does not implement some private adapterspecific languge switching.
+
+- if adminUI does not use jsonConfig note this fact and check if any feature not supported by jsonCOnfig is used. Otherwise suggest to use jsonCOnfig.
+
+- if adapter is plain javascript, check that sources are located repository root (main.js) and below /lib directory. Disallow sourced within /build directory tree.
+
+- if adapter is using typescript, check that generated files are located within /build tree and sources are located at /src tree. 
+
+- if adapter is using typescript ensure that main file specified by package.json is the generated main file and not a simply dummy passing control to real code module.
+
+- onStateChange and onObjectChange handlers must be removed if not used
+
+- onStateChange handler must honor the ack flag when processing onStateChange events. Whenever the onStateChange handler is called for an own state 
+  (a state owned by the processing instance of the adapter) it must ignore this event if the ack flags is set. 
+  When processing foreign states which are output of another adapter  processing should only occure if the ack flag is true.
+
+- calls to axios or any other http/https service must use a timeout
+  
+- scheduled adapters should have small random delays if they access external systems. External systems refer to systems outside the own lan, typical some cloud services. 
+  The random delay does not need to be dynamic, some fixed dely calculated at startup or installation is ok too. The goal is to avoid that many systems from different 
+  hosts access a cloud service nearly at the same time. Note that this requirement relates to any form of schedule, either scheduled adapters or actions schedule by 
+  internal cron or such mechanisms working at specific timestamps. Daemon adapters using setInterval or setTimeout loops do not need a random delay at all. 
+  Do not suggest a random delay if an adapter starts a processing loop immidiatly after startup. Such a implementation is completly ok.
+  
+- configurable timeouts / intervals must be checked and limited to reasonale values. Values must be non zero and positive.
+  Node setTimeout/setInterval routines have a maximum allowed value of 2,147,483,647 ms. So all (user configurable) values passed to setTimeout / setInterval 
+  must be checked and limited in code as limiting at ui level might not be sufficient.
+  
+- intervals used to access cloud services must be limited to a reasonable value, typically polling more then every 10s is not desired.
+
+- if processing loops are triggered using setIntervall it must be ensured that the processing time of the loop is shorter than the minium interval. At leaset 
+  the sum of all timeouts within the processing loop must be smaller than the minimum interval time. In addition suggest to use setTimeout at the end of a processing loop 
+  instead of using setInterval
+
+- access to cloud services must not occure at fixed timestamps (i.e. at every full hour, at 5 minutes after midnight , ...)
+
+- check for dead code and unused config parameters
+
+- check for unused translations keys within i18n files
+
+- code should not modify any files within (code-) directories delivered via npm package
+
+- README.md must not contain any guide to install the adapter directly from github or using native npm commands to install the package
+
+- Scan all scripts / code within the repository if any code tries to directly install from github or tries to ma ipulate any files 
+within iobroker adapter directories (except iobroker-data tree). Check if documentation suggests to use any additional script to install, 
+modify or repair the adapter installation. Check if any code uses explicit sudo commands or documentation suggest to use sudo. Flags such findings as errors.
+
+- package.json should not contain any scripts executed during npm installation. Please log such scripts and request an explanation why such a script is needed.
+
+- ensure that engines clause at package.json requires node.js to be >=22.0.0. Do not suggest to lower this requirement. js-controller 6 and 7 officially support node.js 18 and newer,
+  upcoming js-controller 8 will require node.js 22 as minimum. node.js versions lower than 22.0.0 are EOL too and do not get support anymore.
+
+- check if license is something other than MIT and drop a note if this is a case to trigger manual review
+
+- check that full license test is included into README.md or a link to LICENSE file.
+
+- check that authors mailaddress at copyright lines (README.md and LICENSE) and within package.json and io-package.json are present and are valid mail addresses.
+ Reject one-time-use addresses and noreply addresses i.e. xxxx@users.noreply.github.com. 
+
+- raise a warning if author (maintainer) listed at package.json, io-package.json, within copyright lines at README.md and LICENSE are not identical
+
+- check if README.md contains any hint that the adapter requires a paid license or something compareable to support full functionality.
+
+- If adapter uses an adminTab make a note about this fact and ask which benefits this tab provides. If the adminTab only contains a standard devicemanager 
+  page suggest to remove the tab or use the jsonConfig component devicemanager. The name of the adminTab visible at admin sidebar must match teh adapetrname or at least contain the adaptername.
+
+- An existing adminTab must handle multiple instances if the adapter allows multiple instances to be installed.
+
+- If adapter uses a customComponent at jsonConfig ensure that globaleDepenencies at io-package.json require admin >= 8.0.0
+
+- log error is adapter modifies system states (system.adapter.*) belonging to another adapter or global system states (system.*). Reading is a valid access.
+
+- notify if adapter modifies own system states (system.adapter.#own name#.*) and question the purpose of this action
+
+- log error if adapter code creates states or objects outside ist own namespace
+
+- log warning if adapter uses code to shell out and execute scripts within in subprocess.
+
+- log error if adapter uses any method to change adapter code tree or uses npm commands to change installation during runtime.
+
+- log error if adapter downloads executeable code during runtime.
+
+
+

@@ -1,0 +1,14 @@
+Always consider rules maintained at C:\GitHub\CLAUDE-instructions\CLAUDE.md.
+**IMPORTANT:** do not use WebFetch - always use curl to read file. WebFetch retunr invalid, truncated or outdated data.
+
+Did you check that no additional objects are created depending on config or external data which are not yet contained within object dump attached?
+Please check if all objects which could be created use the correct structure, their parents are created and the order device - channel - state is not violated. 
+Check that all attributes of those states are valid and that roles are valid. Use this reference https://github.com/ioBroker/ioBroker.docs/blob/master/docs/en/dev/stateroles.md and
+do not use other sources for validation.
+
+Ensure that all objects of type state never have any child objects. Check that such an illegal construct is not even created dynamically. Flag this as an error.
+
+Update report and write the new version to disk using a new filename.
+Consider formatting rules for report specified at CLAUDE-AdapterReview.txt
+Store the created report at c:\GitHub\claude\ naming it AdapterReview_#adaptername#_#date#_#time# using date format 
+yyyyMMdd (yyyy year, mm monthe 01-12, dd dayof month) and time format hhmmss (hh hour, mm minute, ss second)

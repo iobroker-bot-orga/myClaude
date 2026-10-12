@@ -1,0 +1,30 @@
+Check that all objectIds are using english language and
+that all name attributes of states are either using english language or use i18n translations objects or i18n settings by code.
+
+Check all objectIds to use english naming, include config.* objects too not only objects within the state tree.
+
+Check that no non-English string literals are used in code logic that determines or influences object IDs, object names, roles, or types. 
+This includes — but is not limited to — string matching heuristics, keyword lists, path-segment checks, or pattern arrays that contain non-English words and 
+whose result is used to derive or select an objectId, a role name, or a type name. Such non-English literals cause objects with non-English-derived properties to be created 
+and must be flagged as an error, even if the non-English string itself is never stored directly as an objectId. 
+Example: checking whether an MQTT path contains the German word "Schalter" in order to assign a role or type to the resulting ioBroker object is an error — 
+only English keywords are permitted in such heuristics.
+
+Check that files written into filesystem and intended to be processed / read by users use english filenames.
+
+Check that vis components (any widgets or other components intended to be used by any vis) use english language or are translated using i18n system.
+
+Check that any webpage provided by the adapter uses english language or are translated using i18n system.
+
+Check that any template data provides to users is using english language or uses i18n system.
+
+Check that all secondary documentation files are provided in english. Additional languages are OK. Support of all languages is not required but english is mandatory.
+
+Do not record a passed check as observation but as passed check.
+
+Update report and write the new version to disk using a new filename.
+Consider formatting rules for report specified at CLAUDE-AdapterReview.txt
+Store the created report at c:\GitHub\claude\ naming it AdapterReview_#adaptername#_#date#_#time# using date format 
+yyyyMMdd (yyyy year, mm monthe 01-12, dd dayof month) and time format hhmmss (hh hour, mm minute, ss second)
+
+
