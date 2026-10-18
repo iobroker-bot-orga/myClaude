@@ -30,8 +30,6 @@ gh release view v<to-version> --repo <org>/ioBroker.<adaptername> \
   --json body,publishedAt --jq '{date: .publishedAt, body: .body}'
 ```
 
-The GitHub org is usually `iobroker-community-adapters`; check the repo view if unsure.
-
 Find the **release date** of `<to-version>` from `publishedAt`.
 
 Also read the adapter's `io-package.json` (or the repo's README) to get a one-line
