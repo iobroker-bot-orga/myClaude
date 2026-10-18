@@ -37,7 +37,7 @@ description of what the adapter does — use it in the opening sentence of the e
 
 ---
 
-## Step 2 – Identify the adapter's GitHub org
+## Step 2 – Identify the adapter's GitHub owner or org
 
 ```bash
 gh repo view iobroker-community-adapters/ioBroker.<adaptername> 2>/dev/null \
