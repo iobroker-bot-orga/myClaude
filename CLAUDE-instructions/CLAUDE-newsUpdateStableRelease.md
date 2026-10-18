@@ -60,7 +60,7 @@ Insert the new entry **just before** the closing comment block at the very end o
 ### Entry format
 
 ```markdown
-## <adaptername> (D.M.YYYY) – new feature
+## <adaptername> (D.M.YYYY) – new stable release
 https://github.com/<org>/ioBroker.<adaptername>
 
 <img src="https://raw.githubusercontent.com/<org>/ioBroker.<adaptername>/master/admin/<adaptername>.png" width="100" height="100" />
