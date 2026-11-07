@@ -30,8 +30,6 @@ gh release view v<to-version> --repo <org>/ioBroker.<adaptername> \
   --json body,publishedAt --jq '{date: .publishedAt, body: .body}'
 ```
 
-The GitHub org is usually `iobroker-community-adapters`; check the repo view if unsure.
-
 Find the **release date** of `<to-version>` from `publishedAt`.
 
 Also read the adapter's `io-package.json` (or the repo's README) to get a one-line
@@ -39,7 +37,7 @@ description of what the adapter does — use it in the opening sentence of the e
 
 ---
 
-## Step 2 – Identify the adapter's GitHub org
+## Step 2 – Identify the adapter's GitHub owner or org
 
 ```bash
 gh repo view iobroker-community-adapters/ioBroker.<adaptername> 2>/dev/null \
@@ -62,7 +60,7 @@ Insert the new entry **just before** the closing comment block at the very end o
 ### Entry format
 
 ```markdown
-## <adaptername> (D.M.YYYY) – new feature
+## <adaptername> (D.M.YYYY) – new stable release <to-version>
 https://github.com/<org>/ioBroker.<adaptername>
 
 <img src="https://raw.githubusercontent.com/<org>/ioBroker.<adaptername>/master/admin/<adaptername>.png" width="100" height="100" />
