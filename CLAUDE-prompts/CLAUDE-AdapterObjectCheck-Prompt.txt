@@ -8,6 +8,8 @@ do not use other sources for validation.
 
 Ensure that all objects of type state never have any child objects. Check that such an illegal construct is not even created dynamically. Flag this as an error.
 
+Ensure that two objectIds do not differn in casing only. So ids named 'myRoom' and #myroom' should be flagged.
+
 Update report and write the new version to disk using a new filename.
 Consider formatting rules for report specified at CLAUDE-AdapterReview.txt
 Store the created report at c:\GitHub\claude\ naming it AdapterReview_#adaptername#_#date#_#time# using date format 
