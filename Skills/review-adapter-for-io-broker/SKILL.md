@@ -12,7 +12,7 @@ description: >
   review, audit or compliance request.
 ---
 
-# ioBroker Adapter Review — Skill v1.11.0
+# ioBroker Adapter Review — Skill v1.12.0
 
 ---
 
@@ -29,7 +29,7 @@ The final report MUST follow this exact structure. Deviating from it is an error
 **Repository:** <url> (tag <tag>)
 **Previous review:** <filename or "none">
 **Checklist version:** ioBroker Adapter Checklist V3.5
-**Skill version:** 1.11.0
+**Skill version:** 1.12.0
 **Reviewer:** Claude Sonnet 4.6 / automated review
 ```
 
@@ -201,11 +201,20 @@ source files and record the result. **Do not generate a report yet.**
 
 ### Metadata — `io-package.json` and `package.json`
 
+> **Schema rule:** Only flag missing or invalid fields that actually exist in the official
+> io-package.json schema:
+> `https://github.com/ioBroker/ioBroker.js-controller/blob/master/schemas/io-package.json`
+> Never invent fields. If you are unsure whether a field exists, do not flag it.
+
 - `common.type` must match the adapter's actual functionality. Flag for manual review if uncertain.
 - `common.connectionType` must match the actual connection implementation. Flag for manual review
   if uncertain.
 - `package.json` must specify `"engines": { "node": ">=22.0.0" }`. Do not suggest lowering this
   requirement.
+- **`common.node` does NOT exist in `io-package.json`** — it is not part of the schema. Never flag
+  its absence and never suggest adding it. Node version requirements belong only in `package.json`
+  under `"engines"`. (The only node-related field in `common` is `nodeProcessParams`, which is for
+  passing CLI arguments to the node process — an entirely different purpose.)
 - `package.json` must not contain scripts executed during `npm install` (e.g., `preinstall`,
   `postinstall`, `install` hooks that do real work). Log any such scripts and request an explanation.
 - Authors' email addresses in `package.json`, `io-package.json`, copyright lines in `README.md` and
@@ -220,11 +229,18 @@ source files and record the result. **Do not generate a report yet.**
 - `"type": "free"` — the `link` field is **not required**. Do not flag its absence.
 - `"type": <anything else>` — the `link` field should point to the license text; flag if missing.
 
-#### Field Casing Rules
+#### Field Casing and Existence Rules
 
-Always verify field names against the official io-package.json schema. Known case-sensitive field:
+Always verify field names against the official io-package.json schema before flagging anything.
+Schema URL: `https://github.com/ioBroker/ioBroker.js-controller/blob/master/schemas/io-package.json`
+
+Known case-sensitive field:
 - `"nogit"` — **all lowercase**. This is the correct spelling per the schema (`common.nogit`).
   Do NOT flag it as wrong or suggest `"noGit"`.
+
+Fields that do NOT exist in `io-package.json` and must never be flagged as missing:
+- `common.node` — node version requirements belong only in `package.json` → `"engines"`. Do not
+  suggest adding `common.node` under any circumstances.
 
 ### Object IDs & Object Structure
 
@@ -669,7 +685,7 @@ Run this checklist against the draft report. Fix every violation before proceedi
 **Header**
 - [ ] Starts with `**Report generated:**` (no `#` heading above it)
 - [ ] Contains all 8 required fields in order: Report generated, Adapter, Version reviewed, Repository, Previous review, Checklist version, Skill version, Reviewer
-- [ ] Skill version matches `1.11.0`
+- [ ] Skill version matches `1.12.0`
 
 **Sections**
 - [ ] `## Status of Previous Review Findings` present

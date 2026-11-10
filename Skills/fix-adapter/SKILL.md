@@ -1,12 +1,22 @@
 ---
 name: fixingIoBrokerAdapter
-description: Use this skill to fix, resolve, or implement a change for an ioBroker adapter. Triggers on prompts like "fix issue <URL>", "fix <GitHub issue link>", "resolve issue", "implement fix for ioBroker", or any bug report or change request for an ioBroker adapter repository. Covers branch creation, code fix, changelog, unit tests, PR creation, and issue comment.
-version: 1.3.0
+description: Use this skill to fix, resolve, or implement a change for an ioBroker adapter. Triggers on prompts like "fix issue URL", "fix issues URL", "fix GitHub issue", "fix GitHub issues", "resolve issue", "resolve issues", "implement fix for ioBroker", or any bug report or change request for an ioBroker adapter repository. Covers branch creation, code fix, changelog, unit tests, PR creation, and issue comment.
+version: 1.4.0
 ---
 
 # Fixing an ioBroker Adapter Issue
 
-> **Skill version:** 1.3.0
+> **Skill version:** 1.4.0
+
+## Usage Note — Claude Code (CLI)
+
+In **Claude Code** this skill is not auto-triggered. Invoke it explicitly:
+```
+/fixingIoBrokerAdapter Fix issue https://github.com/...
+```
+In the **claude.ai web/desktop UI** the skill is triggered automatically when your prompt matches the description above.
+
+---
 
 ## 1. Understand the Task
 
@@ -123,7 +133,9 @@ Add a comment to the GitHub issue containing:
 
 | Version | Date | Change |
 |---------|------|--------|
-| 1.3.0 | 2026-11-08 | Improved description to reliably trigger on "fix issue <URL>" prompts |
+| 1.4.0 | 2026-11-08 | Added plural issue variants to description; added Claude Code slash-command usage note |
+| 1.3.1 | 2026-11-08 | Removed XML tags from description (angle brackets in URL/link placeholders) |
+| 1.3.0 | 2026-11-08 | Improved description to reliably trigger on "fix issue URL" prompts |
 | 1.2.0 | 2026-11-08 | Added version field and skill changelog |
 | 1.1.0 | 2026-11-08 | Added coding standards (English-only code/logs, full i18n language set) |
 | 1.0.0 | 2026-11-08 | Initial version |
