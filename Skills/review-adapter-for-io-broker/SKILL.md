@@ -12,7 +12,7 @@ description: >
   review, audit or compliance request.
 ---
 
-# ioBroker Adapter Review — Skill v1.12.0
+# ioBroker Adapter Review — Skill v1.14.0
 
 ---
 
@@ -29,7 +29,7 @@ The final report MUST follow this exact structure. Deviating from it is an error
 **Repository:** <url> (tag <tag>)
 **Previous review:** <filename or "none">
 **Checklist version:** ioBroker Adapter Checklist V3.5
-**Skill version:** 1.12.0
+**Skill version:** 1.14.0
 **Reviewer:** Claude Sonnet 4.6 / automated review
 ```
 
@@ -314,7 +314,8 @@ more specific role, but never an error.
 | sensor, sensor.*              | MUST be false | —             | boolean                      |
 | switch, switch.*              | MUST be true  | MUST be true  | boolean                      |
 | level, level.*                | MUST be true  | MUST be true  | number (see exceptions below)|
-| button                        | MUST be true  | MUST be false | boolean                      |
+| button (write-only)           | MUST be true  | MUST be false | boolean                      |
+| button (sensor / read-only)   | MUST be false | MUST be true  | boolean — see note below     |
 | text, text.url, html, json, list | either    | either        | —                            |
 | date                          | either        | —             | string (ISO) or number (ms)  |
 | info.*                        | should be false | —           | string                       |
@@ -323,6 +324,25 @@ level.color.* exceptions (type = string, not number):
 - level.color.rgb, level.color.rgbw, level.color.cie
 
 Do NOT flag text-role states for having write=true — it is explicitly permitted.
+
+#### Button role — write-only vs sensor button
+
+The `button` role covers two distinct use cases with **opposite** `read`/`write` flags:
+
+**Write-only button** (`write=true, read=false`):
+- Role `button` is **fully valid**. Do NOT suggest changing it to `button.press`.
+- Other valid roles in this category: `button.long`, `button.stop`, `button.start`, `button.open`,
+  `button.close`, `button.play`, `button.pause`, `button.next`, `button.prev`, etc.
+
+**Sensor button** (`write=false, read=true`):
+- Role `button` is **forbidden** by the stateroles.md reference:
+  > "the difference is that `common.write=false`. Please avoid this role and use `button.press`
+  > or `button.long`."
+- Flag as an **ACTIONABLE FINDING**: replace `button` with `button.press` or `button.long`.
+
+**Rule:** Always check the `write`/`read` flags before deciding how to flag `button`:
+- `write=true, read=false` → valid, never flag
+- `write=false, read=true` → ACTIONABLE FINDING, must replace with `button.press` or `button.long`
 
 - Verify that roles retrieved from external sources are properly validated before use.
 - Check object attributes and roles as far as possible by inspecting code — do not rely on the
@@ -685,7 +705,7 @@ Run this checklist against the draft report. Fix every violation before proceedi
 **Header**
 - [ ] Starts with `**Report generated:**` (no `#` heading above it)
 - [ ] Contains all 8 required fields in order: Report generated, Adapter, Version reviewed, Repository, Previous review, Checklist version, Skill version, Reviewer
-- [ ] Skill version matches `1.12.0`
+- [ ] Skill version matches `1.14.0`
 
 **Sections**
 - [ ] `## Status of Previous Review Findings` present
