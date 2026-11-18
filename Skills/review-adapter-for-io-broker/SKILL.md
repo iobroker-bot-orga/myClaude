@@ -12,7 +12,7 @@ description: >
   review, audit or compliance request.
 ---
 
-# ioBroker Adapter Review — Skill v1.14.0
+# ioBroker Adapter Review — Skill v1.20.0
 
 ---
 
@@ -29,7 +29,7 @@ The final report MUST follow this exact structure. Deviating from it is an error
 **Repository:** <url> (tag <tag>)
 **Previous review:** <filename or "none">
 **Checklist version:** ioBroker Adapter Checklist V3.5
-**Skill version:** 1.14.0
+**Skill version:** 1.20.0
 **Reviewer:** Claude Sonnet 4.6 / automated review
 ```
 
@@ -192,6 +192,52 @@ source files and record the result. **Do not generate a report yet.**
 - Check all documentation files (all languages) for any hint that a paid license is required for
   full functionality.
 
+#### README content quality
+
+A README must be useful to end users, not just to developers. Apply the following checks:
+
+**Check: README describes adapter functionality** (ACTIONABLE FINDING if missing)
+
+Read the full README and decide whether it contains a recognisable description of what the adapter
+does and how to use it (configuration, states created, typical workflow). A README that consists
+only of a badge row, a one-line title, build instructions, or a changelog does **not** pass this
+check. Flag as an **ACTIONABLE FINDING** titled "README lacks adapter description":
+
+> README.md does not describe what this adapter does or how to use it. Add at least a short section
+> explaining the adapter's purpose, the device/service it integrates, the states it creates, and
+> the basic configuration steps.
+
+**Check: README is very short** (OBSERVATION if sparse but present)
+
+If the README does describe adapter functionality but is fewer than roughly 200 words of actual
+content (excluding badges, the license block, and the title), add an **OBSERVATION** titled
+"README could be more detailed":
+
+> README.md describes the adapter's purpose but is very brief. Consider expanding it with
+> configuration options, a list of created states or data points, example use cases, or
+> troubleshooting hints so users can get started without digging into the source code.
+
+Do **not** raise this observation when the README already contains a meaningfully detailed
+description; apply it only when the content feels noticeably sparse.
+
+**Check: README contains extended development content** (ACTIONABLE FINDING if present)
+
+Look for sections in README.md that are aimed at contributors or developers rather than end users:
+developer setup instructions, contribution guidelines, architecture descriptions, debugging
+procedures, CI/CD workflows, build scripts, or change logs that dominate the document.
+
+If such developer-oriented content makes up a significant portion of the README (roughly one-third
+or more, or any dedicated section of 10+ lines), flag as an **ACTIONABLE FINDING** titled
+"Development content in README":
+
+> README.md contains substantial development or contribution information (e.g. build steps,
+> architecture notes, contribution guidelines). This content is better placed in a separate
+> `DEVELOPMENT.md` file so the README stays focused on end-user instructions. Consider moving
+> those sections to `DEVELOPMENT.md` and linking to it from the README.
+
+Only raise this finding when developer content is genuinely prominent. Do **not** suggest a
+`DEVELOPMENT.md` for a brief "Contributing" badge link or a one-line "run `npm test`" note.
+
 ### Icon
 
 - Adapter must have a unique icon. It must not use the create-adapter creator icon at
@@ -209,8 +255,10 @@ source files and record the result. **Do not generate a report yet.**
 - `common.type` must match the adapter's actual functionality. Flag for manual review if uncertain.
 - `common.connectionType` must match the actual connection implementation. Flag for manual review
   if uncertain.
-- `package.json` must specify `"engines": { "node": ">=22.0.0" }`. Do not suggest lowering this
-  requirement.
+- `package.json` must require Node.js >= 22 via the `"engines"` field. Any semver expression that
+  correctly requires Node.js 22 or higher is acceptable — for example `">=22"`, `">= 22"`,
+  `">=22.0.0"`, or `"^22.0.0"`. Do not flag formatting differences between these equivalent forms.
+  Do not suggest lowering this requirement.
 - **`common.node` does NOT exist in `io-package.json`** — it is not part of the schema. Never flag
   its absence and never suggest adding it. Node version requirements belong only in `package.json`
   under `"engines"`. (The only node-related field in `common` is `nodeProcessParams`, which is for
@@ -266,6 +314,31 @@ Fields that do NOT exist in `io-package.json` and must never be flagged as missi
 - Warn (do not error) if the adapter modifies its own `system.adapter.<own-name>.*` states and ask
   the developer to explain the purpose.
 
+#### Object Deletion and `common.custom` Protection
+
+When an adapter deletes objects at startup (e.g. removing states for registers or channels that
+are no longer in the current configuration), check whether the deletion code inspects
+`common.custom` before deleting:
+
+- If the adapter deletes objects unconditionally (e.g. `delObject`, `delObjectAsync`,
+  `deleteStateAsync`) without first checking whether the object has `common.custom` entries
+  (History, InfluxDB, SQL adapter links, etc.), flag as an **ACTIONABLE FINDING**.
+  User-configured custom settings are permanently lost on deletion and cannot be recovered
+  automatically when the object is re-created.
+
+  Recommended remediation (at least one of):
+  1. Read the existing object before deleting it (`getObject`). If `obj.common.custom` is set
+     and non-empty, skip the deletion and emit a warning to the log instead.
+  2. Provide a configuration option that lets the user choose whether objects should be deleted
+     or only disabled (e.g. set `common.write=false`) when no longer in use.
+
+  Grep pattern to find deletion calls:
+  ```bash
+  grep -rn --include="*.js" --include="*.ts" \
+    --exclude-dir=build --exclude-dir=node_modules \
+    "delObject\|deleteState\|delState" <repo-dir>/
+  ```
+
 #### Object Hierarchy Rules
 
 Two violations must be flagged as 🔴 errors:
@@ -284,6 +357,11 @@ Two violations must be flagged as 🔴 errors:
   the code.
 
 ### State Roles & Attributes
+
+> **`common.role` applies to `state` objects only.**
+> Objects of type `device`, `channel`, and `folder` do NOT have `common.role` — it is not part
+> of their schema. Never flag a missing or undefined `common.role` on a device, channel, or folder.
+> Never suggest adding a role to a device, channel, or folder object.
 
 Validate all state roles against the official reference — always fetch with `curl` (see warning at
 the top). Only roles explicitly listed there are valid.
@@ -467,11 +545,110 @@ examples per finding.
   (outside iobroker-data), or use sudo. Flag as errors.
 - Check documentation for instructions suggesting additional scripts, manual npm commands, or sudo.
 
+#### Bundled binary executables
+
+Adapters must not ship or use pre-compiled binary executables. All executable code must be in
+source form (JavaScript/TypeScript) or installed as npm packages that compile from source on the
+target machine.
+
+Report as an **OBSERVATION** any binary executable file found in the repository or referenced at
+runtime. Examples of files to flag: `.exe`, `.dll`, `.so`, `.dylib`, `.bin`, ELF binaries,
+Mach-O binaries, or any file whose content starts with a known binary magic byte sequence
+(`MZ`, `\x7fELF`, `\xca\xfe\xba\xbe`, etc.) regardless of its extension.
+
+Grep / find patterns to locate candidates:
+```bash
+# By extension
+find <repo-dir> \
+  -not -path "*/node_modules/*" -not -path "*/.git/*" -not -path "*/build/*" \
+  \( -name "*.exe" -o -name "*.dll" -o -name "*.so" -o -name "*.dylib" -o -name "*.bin" \)
+
+# ELF and PE magic bytes in files without a recognised text extension
+find <repo-dir> \
+  -not -path "*/node_modules/*" -not -path "*/.git/*" -not -path "*/build/*" \
+  -type f ! -name "*.js" ! -name "*.ts" ! -name "*.json" ! -name "*.md" \
+  ! -name "*.png" ! -name "*.jpg" ! -name "*.svg" ! -name "*.css" \
+  | xargs -I{} sh -c 'file "{}" | grep -qiE "ELF|PE32|Mach-O|executable" && echo "{}"' 2>/dev/null
+```
+
+Also check `package.json` for `postinstall` or `preinstall` scripts that download or compile
+binaries, and check the source code for `child_process` calls that execute a bundled binary path.
+
+#### Direct Redis connection — bypass of js-controller security
+
+Adapters must never connect directly to ioBroker's internal Redis database. All state and object
+access must go through the ioBroker adapter API (`this.getState`, `this.setState`,
+`this.getObject`, `this.setObject`, etc.) or the official `@iobroker/adapter-core` abstractions.
+
+Directly connecting to Redis bypasses the js-controller's user authentication and ACL enforcement,
+which is a security violation regardless of intent.
+
+Flag as an **ACTIONABLE FINDING** any code that:
+- Creates a direct Redis connection to ports typically used by ioBroker (default: 9000 objects DB,
+  9001 states DB, but any hardcoded Redis port or Redis URL in the adapter config must be flagged)
+- Uses Redis client libraries (`ioredis`, `redis`, `node-redis`, `redis-client`, etc.) to read or
+  write ioBroker states or objects
+- Reads ioBroker connection parameters (Redis host/port) from `iobroker-data/iobroker.json` or
+  the system config in order to connect directly
+
+Grep patterns to locate candidates:
+```bash
+grep -rn --include="*.js" --include="*.ts" --include="package.json" \
+  --exclude-dir=build --exclude-dir=node_modules \
+  "ioredis\|node-redis\|redis-client\|createClient\|9000\|9001" <repo-dir>/
+
+grep -rn --include="*.js" --include="*.ts" \
+  --exclude-dir=build --exclude-dir=node_modules \
+  "iobroker\.json\|objects\.db\|states\.db" <repo-dir>/
+```
+
+Also check `package.json` dependencies for Redis client packages. If a Redis package is listed as
+a dependency, inspect how it is used — a legitimate non-ioBroker Redis integration (e.g. a Redis
+adapter that is explicitly designed to interface with the user's own Redis instance) is acceptable,
+but any use targeting ioBroker's internal DB must be flagged.
+
 ### Code Quality
 
 - Check for dead code and unused config parameters.
 - If json2iob is used, verify the adapter meets all requirements from
   https://github.com/TA2k/json2iob. Skip this check if json2iob is not used.
+
+#### Unhandled async rejections via `void`
+
+Scan for event handlers and callbacks that call async functions using `void` without attaching
+a `.catch()`. This pattern silently swallows errors — if the async function throws (e.g. a
+`setState` call during adapter shutdown), Node.js raises an unhandled rejection, which typically
+causes the adapter process to restart.
+
+Flag as an **ACTIONABLE FINDING** any pattern of the form:
+```js
+something.on('event', (arg) => void this.someAsyncMethod(arg))
+// or
+void this.someAsyncMethod(arg)   // in a non-async context with no catch
+```
+where `someAsyncMethod` is an `async` function (or returns a Promise) and there is no
+`.catch(...)` chained to the `void` expression or surrounding try/catch.
+
+Recommended remediation:
+```js
+something.on('event', (arg) => void this.someAsyncMethod(arg).catch(e => this.log.error(e)))
+// or convert the outer callback to async:
+something.on('event', async (arg) => { try { await this.someAsyncMethod(arg); } catch(e) { this.log.error(e); } })
+```
+
+Grep patterns to locate candidates:
+```bash
+grep -rn --include="*.js" --include="*.ts" \
+  --exclude-dir=build --exclude-dir=node_modules \
+  "void this\." <repo-dir>/
+
+grep -rn --include="*.js" --include="*.ts" \
+  --exclude-dir=build --exclude-dir=node_modules \
+  "=> void " <repo-dir>/
+```
+
+After locating candidates, verify that the called method is `async` or returns a Promise, and
+that no `.catch()` is present. Only flag confirmed unprotected async calls, not synchronous ones.
 
 ### Object Dump Validation (only if a dump is attached to the session)
 
@@ -705,7 +882,7 @@ Run this checklist against the draft report. Fix every violation before proceedi
 **Header**
 - [ ] Starts with `**Report generated:**` (no `#` heading above it)
 - [ ] Contains all 8 required fields in order: Report generated, Adapter, Version reviewed, Repository, Previous review, Checklist version, Skill version, Reviewer
-- [ ] Skill version matches `1.14.0`
+- [ ] Skill version matches `1.20.0`
 
 **Sections**
 - [ ] `## Status of Previous Review Findings` present
