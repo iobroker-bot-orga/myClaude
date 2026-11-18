@@ -12,7 +12,7 @@ description: >
   review, audit or compliance request.
 ---
 
-# ioBroker Adapter Review — Skill v1.20.0
+# ioBroker Adapter Review — Skill v1.21.0
 
 ---
 
@@ -29,7 +29,7 @@ The final report MUST follow this exact structure. Deviating from it is an error
 **Repository:** <url> (tag <tag>)
 **Previous review:** <filename or "none">
 **Checklist version:** ioBroker Adapter Checklist V3.5
-**Skill version:** 1.20.0
+**Skill version:** 1.21.0
 **Reviewer:** Claude Sonnet 4.6 / automated review
 ```
 
@@ -405,22 +405,42 @@ Do NOT flag text-role states for having write=true — it is explicitly permitte
 
 #### Button role — write-only vs sensor button
 
+> ⚠️ **This is a known false-positive trap.** Read all of the rules below before drawing any
+> conclusion about a `button` role. The correct action depends entirely on the `write`/`read`
+> flags — never on what stateroles.md says in isolation.
+
 The `button` role covers two distinct use cases with **opposite** `read`/`write` flags:
 
 **Write-only button** (`write=true, read=false`):
-- Role `button` is **fully valid**. Do NOT suggest changing it to `button.press`.
-- Other valid roles in this category: `button.long`, `button.stop`, `button.start`, `button.open`,
-  `button.close`, `button.play`, `button.pause`, `button.next`, `button.prev`, etc.
+- Role `button` is **fully valid and correct**. This is the standard role for action-triggering
+  states such as "trigger self-test", "refresh", "start", "stop", etc.
+- **NEVER flag this as a finding. NEVER suggest changing `button` to `button.press`.**
+- stateroles.md's mention of `button.press` applies ONLY to the sensor-button case below.
+  It does NOT apply here.
+- Other valid roles in this same write-only category: `button.long`, `button.stop`,
+  `button.start`, `button.open`, `button.close`, `button.play`, `button.pause`,
+  `button.next`, `button.prev`, etc. All are valid when `write=true, read=false`.
 
 **Sensor button** (`write=false, read=true`):
 - Role `button` is **forbidden** by the stateroles.md reference:
   > "the difference is that `common.write=false`. Please avoid this role and use `button.press`
   > or `button.long`."
 - Flag as an **ACTIONABLE FINDING**: replace `button` with `button.press` or `button.long`.
+- This is the ONLY situation where `button.press` should be recommended.
 
-**Rule:** Always check the `write`/`read` flags before deciding how to flag `button`:
-- `write=true, read=false` → valid, never flag
-- `write=false, read=true` → ACTIONABLE FINDING, must replace with `button.press` or `button.long`
+**Decision rule — apply this every time before writing any finding about `button`:**
+
+| `write` | `read` | Correct? | Action |
+|---------|--------|----------|--------|
+| `true`  | `false` | ✅ Yes  | No finding. Do not mention it. |
+| `false` | `true`  | ❌ No   | ACTIONABLE FINDING: use `button.press` or `button.long`. |
+| both `false` or both `true` | — | ⚠️ Unusual | Flag only as OBSERVATION, do not prescribe `button.press`. |
+
+**Example of a correct (non-finding) state:**
+```
+"gateway.triggerSelfTest": { "type": "state", "common": { "role": "button", "write": true, "read": false } }
+```
+This is fully correct. Do **not** flag it. Do **not** suggest `button.press`.
 
 - Verify that roles retrieved from external sources are properly validated before use.
 - Check object attributes and roles as far as possible by inspecting code — do not rely on the
@@ -882,7 +902,7 @@ Run this checklist against the draft report. Fix every violation before proceedi
 **Header**
 - [ ] Starts with `**Report generated:**` (no `#` heading above it)
 - [ ] Contains all 8 required fields in order: Report generated, Adapter, Version reviewed, Repository, Previous review, Checklist version, Skill version, Reviewer
-- [ ] Skill version matches `1.20.0`
+- [ ] Skill version matches `1.21.0`
 
 **Sections**
 - [ ] `## Status of Previous Review Findings` present
